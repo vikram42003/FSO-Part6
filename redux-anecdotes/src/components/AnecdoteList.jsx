@@ -14,7 +14,9 @@ const Anecdote = ({ anecdote, handleVote }) => {
 };
 
 const AnecdoteList = () => {
-  const anecdotes = useSelector(store => store);
+  const anecdotes = useSelector(store =>
+    store.filter === "" ? store.anecdotes : store.anecdotes.filter(a => a.content.match(new RegExp(store.filter, "ig")))
+  );
   const dispatch = useDispatch();
 
   const vote = id => {
