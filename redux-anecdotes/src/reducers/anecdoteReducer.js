@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import anecdotesService from "../services/anecdote";
+import { setNotification, clearNotification } from "./notificationReducer";
 
 const anecdoteSlice = createSlice({
   name: "anecdotes",
@@ -20,11 +21,12 @@ const anecdoteSlice = createSlice({
   },
 });
 
-export const { addVote, setAnecdotes } = anecdoteSlice.actions;
+const { addAnecdote, addVote, setAnecdotes } = anecdoteSlice.actions;
 
 export const initializeAnecdotes = () => {
   return async dispatch => {
     const anecdotes = await anecdotesService.getAll();
+    anecdotes.sort((a, b) => b.votes - a.votes);
     dispatch(setAnecdotes(anecdotes));
   };
 };
@@ -32,7 +34,21 @@ export const initializeAnecdotes = () => {
 export const createAnecdote = anecdote => {
   return async dispatch => {
     const newAnecdote = await anecdotesService.createAnecdote(anecdote);
-    dispatch(anecdoteSlice.actions.addAnecdote(newAnecdote));
+    dispatch(addAnecdote(newAnecdote));
+  };
+};
+
+let timeoutId = null;
+export const updateVotes = oldAnecdote => {
+  return async dispatch => {
+    const anecdote = { ...oldAnecdote, votes: oldAnecdote.votes + 1 };
+    await anecdotesService.updateVotes(anecdote);
+    dispatch(addVote(anecdote.id));
+    dispatch(setNotification(`you voted '${anecdote.content}'`));
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      dispatch(clearNotification());
+    }, 5000);
   };
 };
 

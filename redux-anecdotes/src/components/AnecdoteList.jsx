@@ -1,7 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { addVote } from "../reducers/anecdoteReducer";
-import { setNotification, clearNotification } from "../reducers/notificationReducer";
-import { useRef } from "react";
+import { updateVotes } from "../reducers/anecdoteReducer";
 
 const Anecdote = ({ anecdote, handleVote }) => {
   return (
@@ -16,8 +14,6 @@ const Anecdote = ({ anecdote, handleVote }) => {
 };
 
 const AnecdoteList = () => {
-  const timeoutRef = useRef(null);
-
   const anecdotes = useSelector(store =>
     store.filter === "" ? store.anecdotes : store.anecdotes.filter(a => a.content.match(new RegExp(store.filter, "ig")))
   );
@@ -25,17 +21,8 @@ const AnecdoteList = () => {
 
   const vote = id => {
     console.log("vote", id);
-    const content = anecdotes.find(a => a.id === id).content;
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    dispatch(setNotification(`you voted '${content}'`));
-    timeoutRef.current = setTimeout(() => {
-      dispatch(clearNotification());
-    }, 5000);
-    dispatch(addVote(id));
+    const anecdote = anecdotes.find(a => a.id === id);
+    dispatch(updateVotes(anecdote));
   };
 
   return (
